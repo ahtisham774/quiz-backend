@@ -103,7 +103,7 @@ exports.updateQuiz = async (req, res) => {
         const { id } = req.params
         const quiz = await Quiz.findById(id)
         const { name, syllabus, instructions, time } = req.body
-        console.log(req.body)
+        
         const existingQuestions = quiz.questions
         quiz.name = name
         quiz.syllabus = syllabus
@@ -149,7 +149,10 @@ exports.updateQuiz = async (req, res) => {
         quiz.questions = newQuestionsIds
 
         await quiz.save()
-        res.status(200).json({ message: "Quiz Updated Successfully", quiz })
+
+        const updatedQuiz = await Quiz.findById(id).populate("questions")
+
+        res.status(200).json({ message: "Quiz Updated Successfully", quiz:updatedQuiz })
     }
     catch (err) {
         console.log(err)

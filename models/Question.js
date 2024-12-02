@@ -14,7 +14,12 @@ const QuestionSchema = new mongoose.Schema({
         type: String
     },
     is_required: {
-        type: String
+        type: Boolean,
+        default: true
+    },
+    is_hide:{
+        type: Boolean,
+        default: false
     },
     options: [{
         type: String
