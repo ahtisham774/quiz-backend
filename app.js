@@ -7,6 +7,7 @@ var db = require('./database/database')
 var usersRouter = require('./routes/users');
 var quizRouter = require('./routes/quiz');
 var resultRouter = require("./routes/result")
+var topicRouter = require('./routes/topics');
 const authenticateToken = require('./middleware/auth');
 var cors = require('cors');
 const dotenv = require('dotenv');
@@ -30,6 +31,7 @@ app.use('/api/auth/', usersRouter);
 app.use('/api/quiz/', quizRouter);
 app.use('/api/result',  resultRouter);
 app.use('/api/log',  resultRouter);
+app.use('/api/topics', topicRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -5,6 +5,12 @@ const QuizSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    topic: {
+        type: mongoose.Types.ObjectId,
+        ref: "Topic",
+        required: true,
+        index: true,
+    },
     instructions: {
         type: String,
     },

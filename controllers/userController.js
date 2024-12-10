@@ -41,9 +41,6 @@ const sendEmail = async (email, message, subject) => {
 };
 
 
-
-
-
 exports.registerStudent = async (req, res) => {
     try {
 
@@ -64,29 +61,71 @@ exports.registerStudent = async (req, res) => {
         });
         await newStudent.save();
 
+        const subject = "Account Created Successfully";
+        const message = `<p>Your account has been created successfully</p>
+                    <p> Here are your details:</p>
+                    <p>First Name: ${newStudent.firstName}</p>
+                    <p>Last Name: ${newStudent.lastName}</p>
+                    <p>Email: ${newStudent.email}</p>
+                    <p>Password: ${req.body.password}</p>
 
-        const verificationToken = genToken(newStudent._id);
-
-        const subject = "Email Verification";
-        const message = `<p>Please verify your email by clicking the link below:</p>
-                   <a href="${process.env.CLIENT_URL}/verify/${verificationToken}">Verify Email</a>`;
+        `;
         const emailResponse = await sendEmail(newStudent.email, message, subject);
         if (!emailResponse.success) {
             return res.status(500).json({ message: emailResponse.message });
         }
-
-        res.status(200).json({ message: 'Email Verification Link sent to your email' });
-
-
-
-
-
+        res.status(200).json({ message: "Account Creation Email Sent" });
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+// exports.registerStudent = async (req, res) => {
+//     try {
+
+
+//         const existingStudent = await Student.findOne({ email: req.body.email });
+//         if (existingStudent) {
+//             return res.status(409).json({ message: 'Student already exists' });
+//         }
+
+//         const salt = await bcrypt.genSalt(10);
+//         const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+//         const newStudent = new Student({
+//             firstName: req.body.firstName,
+//             lastName: req.body.lastName,
+//             email: req.body.email,
+//             password: hashedPassword
+//         });
+//         await newStudent.save();
+
+
+//         const verificationToken = genToken(newStudent._id);
+
+//         const subject = "Email Verification";
+//         const message = `<p>Please verify your email by clicking the link below:</p>
+//                    <a href="${process.env.CLIENT_URL}/verify/${verificationToken}">Verify Email</a>`;
+//         const emailResponse = await sendEmail(newStudent.email, message, subject);
+//         if (!emailResponse.success) {
+//             return res.status(500).json({ message: emailResponse.message });
+//         }
+
+//         res.status(200).json({ message: 'Email Verification Link sent to your email' });
+
+
+
+
+
+
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// };
 
 exports.generateVerificationToken = async (req, res) => {
     try {
@@ -167,8 +206,8 @@ exports.loginStudent = async (req, res) => {
             if (!student) {
                 return res.status(400).json({ message: 'Invalid credentials' });
             }
-            if (!student.isVerified) {
-                return res.status(400).json({ message: 'Student not verified' });
+            if (student.status != "active") {
+                return res.status(400).json({ message: 'Contact your Admin' });
             }
             const isValidPassword = await bcrypt.compare(req.body.password, student.password);
             if (!isValidPassword) {
@@ -212,7 +251,7 @@ exports.currentUser = async (req, res) => {
             }
             const studentExist = await Student.findById(decoded.id).select('-password')
 
-            if (role === "student" && studentExist && studentExist.isVerified) {
+            if (role === "student" && studentExist && studentExist.status === "active") {
                 return res.json(
                     {
                         _id: studentExist._id,
@@ -223,6 +262,9 @@ exports.currentUser = async (req, res) => {
 
                     }
                 );
+            }
+            else {
+                return res.status(401).json({ message: 'Unauthorized' });
             }
         }
     } catch (error) {
@@ -282,5 +324,46 @@ exports.resetPassword = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ err: 'Server error' });
+    }
+}
+
+
+
+exports.toggleAppearance = async (req, res) => {
+    try {
+        const { id } = req.params
+        const student = await Student.findById(id)
+        student.status = student.status === "active" ? "inactive" : "active"
+        await student.save()
+        res.status(200).json({ message: "Student Updated Successfully", student })
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
+
+exports.deleteStudent = async (req, res) => {
+    try {
+        const { id } = req.params
+        await Student.findByIdAndDelete(id)
+        res.status(200).json({ message: "Student Deleted Successfully" })
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
+
+exports.getAllStudents = async (req, res) => {
+    try {
+        const students = await Student.find().select("-password")
+        res.status(200).json(students)
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({ message: "Internal Server Error" })
     }
 }

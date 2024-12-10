@@ -9,5 +9,8 @@ router.get("/verify/:token", studentController.verifyStudent);
 router.post("/verify/forgot-password", studentController.forgotPassword);
 router.post("/verify/reset-password/:token", studentController.resetPassword);
 router.post('/verify/create-token', studentController.generateVerificationToken)
+router.get("/students/:id/toggle-status", studentController.toggleAppearance);
+router.delete("/students/:id/delete", studentController.deleteStudent);
+router.get("/students/all", studentController.getAllStudents);
 
 module.exports = router;
