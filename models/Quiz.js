@@ -25,6 +25,11 @@ const QuizSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    is_for_try: {
+        type: Boolean,
+        default: false,
+    },
+
     time: {
         type: String,
         default: '0'

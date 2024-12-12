@@ -107,6 +107,19 @@ exports.updateAvailability = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" })
     }
 }
+exports.updateTry = async (req, res) => {
+    try {
+        const { id } = req.params
+        const quiz = await Quiz.findById(id)
+        quiz.is_for_try = !quiz.is_for_try
+        await quiz.save()
+        res.status(200).json({ message: "Quiz Updated Successfully", quiz })
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
 
 
 exports.updateQuiz = async (req, res) => {
